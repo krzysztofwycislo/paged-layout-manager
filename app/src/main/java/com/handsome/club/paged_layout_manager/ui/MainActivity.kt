@@ -2,6 +2,7 @@ package com.handsome.club.paged_layout_manager.ui
 
 import android.app.Activity
 import android.os.Bundle
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.handsome.club.paged_layout_manager.data.exampleCats
 import com.handsome.club.paged_layout_manager.databinding.ActivityMainBinding
@@ -24,10 +25,10 @@ class MainActivity : Activity() {
 
     private fun RecyclerView.initializeCatsList() {
         adapter = CatsRecyclerAdapter(exampleCats)
-
         layoutManager = PagedHorizontalLayoutManager(
-            gridSize = 3 to 5,
+            size = 3 to 5,
         )
     }
+
 
 }
