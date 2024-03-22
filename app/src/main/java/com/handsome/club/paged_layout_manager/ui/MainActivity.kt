@@ -1,9 +1,10 @@
-package com.handsome.club.paged_layout_manager
+package com.handsome.club.paged_layout_manager.ui
 
 import android.app.Activity
 import android.os.Bundle
 import com.handsome.club.paged_layout_manager.data.exampleCats
 import com.handsome.club.paged_layout_manager.databinding.ActivityMainBinding
+import com.handsome.club.paged_layout_manager.ui.cats.CatsRecyclerAdapter
 
 class MainActivity : Activity() {
 
