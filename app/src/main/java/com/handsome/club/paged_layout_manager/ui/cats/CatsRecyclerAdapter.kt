@@ -9,8 +9,10 @@ import com.handsome.club.paged_layout_manager.model.Cat
 
 
 class CatsRecyclerAdapter(
-    private val cats: List<Cat>
+    private var cats: MutableList<Cat>
 ) : RecyclerView.Adapter<CatsRecyclerAdapter.CatsViewHolder>() {
+
+    val removedCats = mutableMapOf<Int, Cat>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CatsViewHolder {
         val itemBinding = CatListItemBinding.inflate(
@@ -23,15 +25,32 @@ class CatsRecyclerAdapter(
     override fun getItemCount(): Int = cats.size
 
     override fun onBindViewHolder(holder: CatsViewHolder, position: Int) {
-        holder.bind(cats[position])
+        holder.bind(position, cats[position])
     }
 
     inner class CatsViewHolder(
         private val binding: CatListItemBinding
     ) : ViewHolder(binding.root) {
 
-        fun bind(cat: Cat) {
-            binding.catName.text = cat.name
+        fun bind(position: Int, cat: Cat) = with(binding) {
+            catName.text = cat.name
+            catLayout.setOnClickListener {
+                val removedCat = cats.removeAt(position)
+                removedCats[position] = removedCat
+
+                notifyDataSetChanged()
+            }
+
+            catLayout.setOnLongClickListener {
+                removedCats.forEach { (i, cat) ->
+                    cats.add(i, cat)
+                    notifyDataSetChanged()
+                }
+
+                removedCats.clear()
+
+                true
+            }
         }
 
     }
