@@ -12,7 +12,6 @@ class CatsRecyclerAdapter(
     private var cats: MutableList<Cat>
 ) : RecyclerView.Adapter<CatsRecyclerAdapter.CatsViewHolder>() {
 
-    val removedCats = mutableMapOf<Int, Cat>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CatsViewHolder {
         val itemBinding = CatListItemBinding.inflate(
@@ -25,33 +24,19 @@ class CatsRecyclerAdapter(
     override fun getItemCount(): Int = cats.size
 
     override fun onBindViewHolder(holder: CatsViewHolder, position: Int) {
-        holder.bind(position, cats[position])
+        holder.bind(cats[position])
     }
 
     inner class CatsViewHolder(
         private val binding: CatListItemBinding
     ) : ViewHolder(binding.root) {
 
-        fun bind(position: Int, cat: Cat) = with(binding) {
+        fun bind(cat: Cat) = with(binding) {
             catName.text = cat.name
             catLayout.setOnClickListener {
-                val removedCat = cats.removeAt(position)
-                removedCats[position] = removedCat
-
-                notifyDataSetChanged()
-            }
-
-            catLayout.setOnLongClickListener {
-                removedCats.forEach { (i, cat) ->
-                    cats.add(i, cat)
-                    notifyDataSetChanged()
-                }
-
-                removedCats.clear()
-
-                true
+                val realIndex = cats.indexOf(cat)
+                notifyItemRemoved(realIndex)
             }
         }
-
     }
 }
