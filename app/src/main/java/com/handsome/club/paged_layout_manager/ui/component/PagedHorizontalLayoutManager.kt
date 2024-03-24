@@ -159,21 +159,20 @@ class PagedHorizontalLayoutManager(
         recycler: RecyclerView.Recycler,
         state: RecyclerView.State
     ): Int {
-        Timber.i("Scroll dx = $dx isPreLayout = ${state.isPreLayout}")
         if (itemCount == 0 && state.isPreLayout) return 0
 
-        val pages = itemCount / itemsInPage
-
+        val pages = (itemCount - 1) / itemsInPage
         val fullSize = pages * width
         val lastOffset = scrollOffset
 
         scrollOffset = if (isLayoutRTL())
-            min(max(-fullSize, scrollOffset + dx), 0)
+            (scrollOffset + dx).coerceIn(-fullSize..0)
         else
-            min(max(0, scrollOffset + dx), fullSize)
+            (scrollOffset + dx).coerceIn(0..fullSize)
 
         fillGrid(recycler, state)
-        return lastOffset - scrollOffset
+
+        return scrollOffset - lastOffset
     }
 
     override fun canScrollHorizontally(): Boolean {
@@ -196,9 +195,7 @@ class PagedHorizontalLayoutManager(
         val firstChildPos = getPosition(getChildAt(0)!!)
         val direction = if (targetPosition < firstChildPos != isLayoutRTL()) -1f else 1f
 
-        return pagedItems.getOrNull(targetPosition)?.run {
-            PointF(direction, 0f)
-        }.also { Timber.i(it.toString()) }
+        return pagedItems.getOrNull(targetPosition)?.run { PointF(direction, 0f) }
     }
 
     override fun smoothScrollToPosition(
