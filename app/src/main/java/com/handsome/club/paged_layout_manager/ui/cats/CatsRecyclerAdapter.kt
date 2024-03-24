@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.handsome.club.paged_layout_manager.databinding.CatListItemBinding
 import com.handsome.club.paged_layout_manager.model.Cat
+import timber.log.Timber
 
 
 class CatsRecyclerAdapter(
@@ -32,9 +33,11 @@ class CatsRecyclerAdapter(
     ) : ViewHolder(binding.root) {
 
         fun bind(cat: Cat) = with(binding) {
+//            Timber.i("Binded ${cat.name}")
             catName.text = cat.name
             catLayout.setOnClickListener {
                 val realIndex = cats.indexOf(cat)
+                cats.removeAt(realIndex)
                 notifyItemRemoved(realIndex)
             }
         }
