@@ -13,6 +13,7 @@ import kotlin.math.min
 
 private val Pair<Int, Int>.columns get() = this.first
 private val Pair<Int, Int>.rows get() = this.second
+typealias Page = Int
 
 class PagedHorizontalLayoutManager(
     private val size: Pair<Int, Int>,
@@ -22,7 +23,7 @@ class PagedHorizontalLayoutManager(
 
     private var scrollOffset = 0
 
-    private var itemRects = arrayListOf<Rect>()
+    private var pagedItems = mutableListOf<PagedItem>()
 
     private val itemWidth get() = width / size.columns
     private val itemHeight get() = height / size.rows
@@ -53,16 +54,16 @@ class PagedHorizontalLayoutManager(
             }
         }
 
-        itemRects.clear()
+        pagedItems.clear()
 
         (0 until itemCount).map { position ->
-            calculateAllItemPosition(position)
-        }.also(itemRects::addAll)
+            calculatePagedItems(position)
+        }.also(pagedItems::addAll)
 
         fillGrid(recycler, state, removedCache)
     }
 
-    private fun calculateAllItemPosition(position: Int): Rect {
+    private fun calculatePagedItems(position: Int): PagedItem {
         val itemPage = position / itemsInPage
         val itemRow = (position % itemsInPage / size.columns)
 
@@ -81,7 +82,10 @@ class PagedHorizontalLayoutManager(
         val top = itemRow * itemHeight
         val bottom = top + itemHeight
 
-        return Rect(left, top, right, bottom)
+        return PagedItem(
+            Rect(left, top, right, bottom),
+            itemPage
+        )
     }
 
     private fun fillGrid(
@@ -123,15 +127,15 @@ class PagedHorizontalLayoutManager(
     }
 
     private fun layoutAppearingView(recycler: RecyclerView.Recycler, appearingViewIndex: Int) {
-        val extraPosition = itemRects.size - itemsInPage + appearingViewIndex
+        val extraPosition = pagedItems.size - itemsInPage + appearingViewIndex
 
-        if (extraPosition > itemRects.size) return
+        if (extraPosition > pagedItems.size) return
 
         val appearingView = recycler.getViewForPosition(extraPosition)
         addView(appearingView)
         measureChildWithMargins(appearingView, itemWidth, itemHeight)
 
-        val lastRect = itemRects.last()
+        val lastRect = pagedItems.last().rect
         layoutDecoratedWithMargins(
             appearingView,
             lastRect.left,
@@ -142,9 +146,9 @@ class PagedHorizontalLayoutManager(
     }
 
     private fun getVisibleViews(recycler: RecyclerView.Recycler): List<Pair<View, Rect>> {
-        return itemRects.mapIndexed { index, itemRect ->
-            if (Rect.intersects(recyclerViewRect, itemRect))
-                recycler.getViewForPosition(index) to itemRect
+        return pagedItems.mapIndexed { index, pagedItem ->
+            if (Rect.intersects(recyclerViewRect, pagedItem.rect))
+                recycler.getViewForPosition(index) to pagedItem.rect
             else
                 null
         }.filterNotNull()
@@ -192,7 +196,7 @@ class PagedHorizontalLayoutManager(
         val firstChildPos = getPosition(getChildAt(0)!!)
         val direction = if (targetPosition < firstChildPos != isLayoutRTL()) -1f else 1f
 
-        return itemRects.getOrNull(targetPosition)?.run {
+        return pagedItems.getOrNull(targetPosition)?.run {
             PointF(direction, 0f)
         }.also { Timber.i(it.toString()) }
     }
@@ -212,5 +216,10 @@ class PagedHorizontalLayoutManager(
             RecyclerView.LayoutParams.WRAP_CONTENT,
             RecyclerView.LayoutParams.WRAP_CONTENT
         )
+
+    data class PagedItem(
+        val rect: Rect,
+        val page: Page
+    )
 
 }
