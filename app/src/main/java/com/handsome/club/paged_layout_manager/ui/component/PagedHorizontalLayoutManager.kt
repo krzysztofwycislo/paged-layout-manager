@@ -7,8 +7,6 @@ import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
 import timber.log.Timber
-import kotlin.math.max
-import kotlin.math.min
 
 
 private val Pair<Int, Int>.columns get() = this.first
@@ -66,6 +64,7 @@ class PagedHorizontalLayoutManager(
     private fun calculatePagedItems(position: Int): PagedItem {
         val itemPage = position / itemsInPage
         val itemRow = (position % itemsInPage / size.columns)
+        val itemColumn = position % size.columns
 
         val (left, right) = if (isLayoutRTL()) {
             val right = ((position % size.columns) * -itemWidth + itemPage * -width) + width
@@ -84,7 +83,8 @@ class PagedHorizontalLayoutManager(
 
         return PagedItem(
             Rect(left, top, right, bottom),
-            itemPage
+            itemPage,
+            itemColumn
         )
     }
 
@@ -214,9 +214,29 @@ class PagedHorizontalLayoutManager(
             RecyclerView.LayoutParams.WRAP_CONTENT
         )
 
+    fun getNextAndPreviousPagePositions(position: Int): Pair<Int?, Int?> {
+        val currentPagePosition = getPageFirstPosition(position)
+        val leftPagePosition = (currentPagePosition - itemsInPage).takeIf { it >= 0 }
+        val rightPagePosition = (currentPagePosition + itemsInPage).takeIf { it < pagedItems.size }
+
+        return if (isLayoutRTL())
+            leftPagePosition to rightPagePosition
+        else
+            rightPagePosition to leftPagePosition
+    }
+
+    fun getPageFirstPosition(position: Int): Int {
+        return if (isLayoutRTL()) {
+            pagedItems.indexOfLast { it.page == pagedItems[position].page && it.column == size.columns -1 }
+        } else {
+            pagedItems.indexOfFirst { it.page == pagedItems[position].page }
+        }
+    }
+
     data class PagedItem(
         val rect: Rect,
-        val page: Page
+        val page: Page,
+        val column: Int
     )
 
 }
