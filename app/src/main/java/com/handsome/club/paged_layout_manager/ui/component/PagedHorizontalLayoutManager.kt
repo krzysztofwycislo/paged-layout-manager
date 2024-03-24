@@ -1,9 +1,12 @@
 package com.handsome.club.paged_layout_manager.ui.component
 
+import android.graphics.PointF
 import android.graphics.Rect
 import android.view.View
 import androidx.core.view.ViewCompat
+import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
+import timber.log.Timber
 import kotlin.math.max
 import kotlin.math.min
 
@@ -13,7 +16,7 @@ private val Pair<Int, Int>.rows get() = this.second
 
 class PagedHorizontalLayoutManager(
     private val size: Pair<Int, Int>,
-) : RecyclerView.LayoutManager() {
+) : RecyclerView.LayoutManager(), RecyclerView.SmoothScroller.ScrollVectorProvider {
 
     private val itemsInPage = size.columns * size.rows
 
@@ -37,6 +40,7 @@ class PagedHorizontalLayoutManager(
         state: RecyclerView.State
     ) {
         if (itemCount == 0) return
+        Timber.i("onLayoutChildren isPreLayout = ${state.isPreLayout}, itemCount = $itemCount")
 
         val removedCache = mutableListOf<Int>()
         if (state.isPreLayout) {
@@ -151,6 +155,7 @@ class PagedHorizontalLayoutManager(
         recycler: RecyclerView.Recycler,
         state: RecyclerView.State
     ): Int {
+        Timber.i("Scroll dx = $dx isPreLayout = ${state.isPreLayout}")
         if (itemCount == 0 && state.isPreLayout) return 0
 
         val pages = itemCount / itemsInPage
@@ -177,6 +182,29 @@ class PagedHorizontalLayoutManager(
 
     override fun supportsPredictiveItemAnimations(): Boolean {
         return true
+    }
+
+    override fun computeScrollVectorForPosition(targetPosition: Int): PointF? {
+        if (childCount == 0) {
+            return null
+        }
+
+        val firstChildPos = getPosition(getChildAt(0)!!)
+        val direction = if (targetPosition < firstChildPos != isLayoutRTL()) -1f else 1f
+
+        return itemRects.getOrNull(targetPosition)?.run {
+            PointF(direction, 0f)
+        }.also { Timber.i(it.toString()) }
+    }
+
+    override fun smoothScrollToPosition(
+        recyclerView: RecyclerView,
+        state: RecyclerView.State,
+        position: Int
+    ) {
+        val linearSmoothScroller = LinearSmoothScroller(recyclerView.context)
+        linearSmoothScroller.targetPosition = position
+        startSmoothScroll(linearSmoothScroller)
     }
 
     override fun generateDefaultLayoutParams(): RecyclerView.LayoutParams =

@@ -12,21 +12,28 @@ class MainActivity : Activity() {
 
     private lateinit var binding: ActivityMainBinding
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater).apply {
             catsList.initializeCatsList()
+
+            nextPageBtn.setOnClickListener { catsList.smoothScrollToPosition(exampleCats.size - 1) }
+            previousPageBtn.setOnClickListener { catsList.smoothScrollToPosition(0) }
         }
 
         setContentView(binding.root)
     }
 
     private fun RecyclerView.initializeCatsList() {
-        adapter = CatsRecyclerAdapter(exampleCats.toMutableList())
         layoutManager = PagedHorizontalLayoutManager(
-            size = 3 to 5,
+            size = 2 to 5,
         )
+
+        adapter = CatsRecyclerAdapter(exampleCats.toMutableList())
+
+//        PageSnapHelper().attachToRecyclerView(this)
     }
 
 
