@@ -19,7 +19,7 @@ class MainActivity : Activity() {
         binding = ActivityMainBinding.inflate(layoutInflater).apply {
             recyclerView.initialize()
 
-            nextPageBtn.setOnClickListener { recyclerView.smoothScrollToPosition(11) }
+            nextPageBtn.setOnClickListener { recyclerView.smoothScrollToPosition(35) }
             previousPageBtn.setOnClickListener { recyclerView.smoothScrollToPosition(0) }
         }
 
@@ -27,7 +27,7 @@ class MainActivity : Activity() {
     }
 
     private fun RecyclerView.initialize() {
-        val list = (0..40).map { it.toString() }.toMutableList()
+        val list = (0..70).map { it.toString() }.toMutableList()
 
         layoutManager = PagedHorizontalLayoutManager(
             size = 5 to 2,
