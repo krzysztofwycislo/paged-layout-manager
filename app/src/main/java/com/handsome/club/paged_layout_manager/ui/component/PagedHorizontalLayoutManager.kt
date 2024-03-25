@@ -25,6 +25,8 @@ class PagedHorizontalLayoutManager(
     private val itemWidth get() = width / size.columns
     private val itemHeight get() = height / size.rows
 
+    private var reversed: Int = 1
+
     private val recyclerViewRect
         get() = Rect().apply {
             left = scrollOffset
@@ -38,6 +40,7 @@ class PagedHorizontalLayoutManager(
         state: RecyclerView.State
     ) {
         if (itemCount == 0) return
+        reversed = if(isLayoutRTL()) -1 else 1
 
         val removedCache = mutableListOf<Int>()
         if (state.isPreLayout) {
@@ -64,16 +67,13 @@ class PagedHorizontalLayoutManager(
         val itemRow = (position % itemsInPage / size.columns)
         val itemColumn = position % size.columns
 
+        val leftValue = ((position % size.columns) * itemWidth + itemPage * width) * reversed
+        val rightValue = leftValue + itemWidth * reversed
+
         val (left, right) = if (isLayoutRTL()) {
-            val right = ((position % size.columns) * -itemWidth + itemPage * -width) + width
-            val left = right - itemWidth
-
-            left to right
+            rightValue + width to leftValue + width
         } else {
-            val left = ((position % size.columns) * itemWidth + itemPage * width)
-            val right = left + itemWidth
-
-            left to right
+            leftValue to rightValue
         }
 
         val top = itemRow * itemHeight
@@ -212,29 +212,17 @@ class PagedHorizontalLayoutManager(
             RecyclerView.LayoutParams.WRAP_CONTENT
         )
 
-    fun getNextAndPreviousPagePositions(position: Int): Pair<Int?, Int?> {
-        val currentPagePosition = getPageFirstPosition(position)
-        val previousPagePosition = (currentPagePosition - itemsInPage).takeIf { it >= 0 }
-        val nextPagePosition = (currentPagePosition + itemsInPage).coerceIn(0, pagedItems.size)
+    fun getPageLeftMostPosition(position: Int): Int {
+        val firstRow = pagedItems.mapIndexedNotNull { index, pagedItem ->
+            if (pagedItem.page == pagedItems[position].page) index else null
+        }.take(size.columns)
 
-        return if (isLayoutRTL())
-            nextPagePosition to previousPagePosition
-        else
-            previousPagePosition to nextPagePosition
+        return if(isLayoutRTL()) firstRow.last() else firstRow.first()
     }
 
-    fun getPageFirstPosition(position: Int): Int {
-        return if (isLayoutRTL()) {
-            pagedItems.mapIndexedNotNull { index, pagedItem ->
-                if (pagedItem.page == pagedItems[position].page) {
-                    index to pagedItem
-                } else null
-            }
-                .maxBy { it.second.column }
-                .first
-        } else {
-            pagedItems.indexOfFirst { it.page == pagedItems[position].page }
-        }
+    fun calculateDistanceToPageStart(position: Int): Int {
+        val page = pagedItems[position].page
+        return page * width * reversed - scrollOffset
     }
 
     data class PagedItem(

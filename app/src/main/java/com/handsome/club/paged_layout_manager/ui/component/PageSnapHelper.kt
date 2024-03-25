@@ -2,6 +2,7 @@ package com.handsome.club.paged_layout_manager.ui.component
 
 import android.view.View
 import androidx.recyclerview.widget.OrientationHelper
+import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.LayoutManager
 import androidx.recyclerview.widget.SnapHelper
 import kotlin.math.abs
@@ -24,10 +25,13 @@ class PageSnapHelper : SnapHelper() {
         layoutManager: LayoutManager,
         targetView: View
     ): IntArray {
+        if (layoutManager !is PagedHorizontalLayoutManager) return intArrayOf(0, 0)
+
         val out = if (layoutManager.canScrollHorizontally()) {
-            val helper = getHorizontalHelper(layoutManager)
-            helper.getDecoratedStart(targetView) - helper.startAfterPadding
+            layoutManager.getPosition(targetView)
+                .run(layoutManager::calculateDistanceToPageStart)
         } else 0
+
         return intArrayOf(out, 0)
     }
 
@@ -37,7 +41,7 @@ class PageSnapHelper : SnapHelper() {
         return indexOfChildClosestToCenter(layoutManager)
             .run(layoutManager::getChildAt)
             ?.run(layoutManager::getPosition)
-            ?.run(layoutManager::getPageFirstPosition)
+            ?.run(layoutManager::getPageLeftMostPosition)
             ?.run(layoutManager::findViewByPosition)
     }
 
@@ -46,18 +50,22 @@ class PageSnapHelper : SnapHelper() {
         velocityX: Int,
         velocityY: Int
     ): Int {
-        if (layoutManager !is PagedHorizontalLayoutManager) return 0
+        if (layoutManager !is PagedHorizontalLayoutManager) return RecyclerView.NO_POSITION
 
-        return indexOfChildClosestToCenter(layoutManager)
-            .run(layoutManager::getChildAt)
+        val childIndex = if(velocityX < 0){
+            indexOfChildClosestToLeft(layoutManager)
+        } else {
+            indexOfChildClosestToRight(layoutManager)
+        }
+
+        return layoutManager.getChildAt(childIndex)
             ?.run(layoutManager::getPosition)
-            ?.run(layoutManager::getNextAndPreviousPagePositions)
-            ?.run { if (velocityX > 0) second else first }
+            ?.run(layoutManager::getPageLeftMostPosition)
             ?: 0
     }
 
     private fun indexOfChildClosestToCenter(layoutManager: LayoutManager): Int {
-        if (layoutManager.childCount == 0) return -1
+        if (layoutManager.childCount == 0) return RecyclerView.NO_POSITION
 
         val helper = getHorizontalHelper(layoutManager)
         val center = helper.totalSpace / 2
@@ -68,6 +76,26 @@ class PageSnapHelper : SnapHelper() {
             val end = helper.getDecoratedEnd(child)
 
             abs((start + end) / 2 - center)
+        }
+    }
+
+    private fun indexOfChildClosestToLeft(layoutManager: LayoutManager): Int {
+        if (layoutManager.childCount == 0) return RecyclerView.NO_POSITION
+
+        val helper = getHorizontalHelper(layoutManager)
+        return (0 until layoutManager.childCount).minBy {
+            layoutManager.getChildAt(it)
+                .run(helper::getDecoratedStart)
+        }
+    }
+
+    private fun indexOfChildClosestToRight(layoutManager: LayoutManager): Int {
+        if (layoutManager.childCount == 0) return RecyclerView.NO_POSITION
+
+        val helper = getHorizontalHelper(layoutManager)
+        return (0 until layoutManager.childCount).maxBy {
+            layoutManager.getChildAt(it)
+                .run(helper::getDecoratedEnd)
         }
     }
 }
