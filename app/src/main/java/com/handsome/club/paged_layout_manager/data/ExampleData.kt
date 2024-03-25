@@ -27,5 +27,6 @@ val exampleCats: List<Cat>
         "Govenor",
         "Boss",
     )
+        .let{ it+it }
         .map(::Cat)
         .mapIndexed { index, cat -> cat.copy(name = "$index ${cat.name}") }

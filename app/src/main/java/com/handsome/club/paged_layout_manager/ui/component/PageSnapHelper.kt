@@ -28,7 +28,6 @@ class PageSnapHelper : SnapHelper() {
             val helper = getHorizontalHelper(layoutManager)
             helper.getDecoratedStart(targetView) - helper.startAfterPadding
         } else 0
-
         return intArrayOf(out, 0)
     }
 
@@ -53,7 +52,7 @@ class PageSnapHelper : SnapHelper() {
             .run(layoutManager::getChildAt)
             ?.run(layoutManager::getPosition)
             ?.run(layoutManager::getNextAndPreviousPagePositions)
-            ?.run { if (velocityX > 0) first else second }
+            ?.run { if (velocityX > 0) second else first }
             ?: 0
     }
 
