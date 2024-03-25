@@ -3,9 +3,8 @@ package com.handsome.club.paged_layout_manager.ui
 import android.app.Activity
 import android.os.Bundle
 import androidx.recyclerview.widget.RecyclerView
-import com.handsome.club.paged_layout_manager.data.exampleCats
 import com.handsome.club.paged_layout_manager.databinding.ActivityMainBinding
-import com.handsome.club.paged_layout_manager.ui.cats.CatsRecyclerAdapter
+import com.handsome.club.paged_layout_manager.ui.cats.ExampleAdapter
 import com.handsome.club.paged_layout_manager.ui.component.PageSnapHelper
 import com.handsome.club.paged_layout_manager.ui.component.PagedHorizontalLayoutManager
 
@@ -18,21 +17,23 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater).apply {
-            catsList.initializeCatsList()
+            recyclerView.initialize()
 
-            nextPageBtn.setOnClickListener { catsList.smoothScrollToPosition(20) }
-            previousPageBtn.setOnClickListener { catsList.smoothScrollToPosition(0) }
+            nextPageBtn.setOnClickListener { recyclerView.smoothScrollToPosition(11) }
+            previousPageBtn.setOnClickListener { recyclerView.smoothScrollToPosition(0) }
         }
 
         setContentView(binding.root)
     }
 
-    private fun RecyclerView.initializeCatsList() {
+    private fun RecyclerView.initialize() {
+        val list = (0..40).map { it.toString() }.toMutableList()
+
         layoutManager = PagedHorizontalLayoutManager(
-            size = 2 to 5,
+            size = 5 to 2,
         )
 
-        adapter = CatsRecyclerAdapter(exampleCats.toMutableList())
+        adapter = ExampleAdapter(list)
         PageSnapHelper().attachToRecyclerView(this)
     }
 
