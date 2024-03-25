@@ -1,4 +1,4 @@
-package com.handsome.club.paged_layout_manager.ui.cats
+package com.handsome.club.paged_layout_manager.ui.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

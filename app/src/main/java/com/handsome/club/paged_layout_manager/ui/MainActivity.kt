@@ -4,7 +4,7 @@ import android.app.Activity
 import android.os.Bundle
 import androidx.recyclerview.widget.RecyclerView
 import com.handsome.club.paged_layout_manager.databinding.ActivityMainBinding
-import com.handsome.club.paged_layout_manager.ui.cats.ExampleAdapter
+import com.handsome.club.paged_layout_manager.ui.adapter.ExampleAdapter
 import com.handsome.club.paged_layout_manager.ui.component.PageSnapHelper
 import com.handsome.club.paged_layout_manager.ui.component.PagedHorizontalLayoutManager
 
