@@ -40,7 +40,7 @@ class PagedHorizontalLayoutManager(
         state: RecyclerView.State
     ) {
         if (itemCount == 0) return
-        reversed = if(isLayoutRTL()) -1 else 1
+        reversed = if (isLayoutRTL()) -1 else 1
 
         val removedCache = mutableListOf<Int>()
         if (state.isPreLayout) {
@@ -201,8 +201,13 @@ class PagedHorizontalLayoutManager(
         state: RecyclerView.State,
         position: Int
     ) {
+        val targetPosition = computeScrollVectorForPosition(position)?.run {
+            if (x > 0) getPageRightmostPosition(position)
+            else getPageLeftmostPosition(position)
+        } ?: return
+
         val linearSmoothScroller = LinearSmoothScroller(recyclerView.context)
-        linearSmoothScroller.targetPosition = position
+        linearSmoothScroller.targetPosition = targetPosition
         startSmoothScroll(linearSmoothScroller)
     }
 
@@ -212,13 +217,23 @@ class PagedHorizontalLayoutManager(
             RecyclerView.LayoutParams.WRAP_CONTENT
         )
 
-    fun getPageLeftMostPosition(position: Int): Int {
-        val firstRow = pagedItems.mapIndexedNotNull { index, pagedItem ->
+    fun getPageLeftmostPosition(position: Int): Int {
+        val firstRow = getPagePositionsInFirstRow(position)
+
+        return if (isLayoutRTL()) firstRow.last() else firstRow.first()
+    }
+
+    private fun getPageRightmostPosition(position: Int): Int {
+        val firstRow = getPagePositionsInFirstRow(position)
+
+        return if (isLayoutRTL()) firstRow.first() else firstRow.last()
+    }
+
+    private fun getPagePositionsInFirstRow(position: Int) =
+        pagedItems.mapIndexedNotNull { index, pagedItem ->
             if (pagedItem.page == pagedItems[position].page) index else null
         }.take(size.columns)
 
-        return if(isLayoutRTL()) firstRow.last() else firstRow.first()
-    }
 
     fun calculateDistanceToPageStart(position: Int): Int {
         val page = pagedItems[position].page

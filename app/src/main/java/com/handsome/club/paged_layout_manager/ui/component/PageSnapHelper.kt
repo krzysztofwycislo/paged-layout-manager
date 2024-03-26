@@ -41,7 +41,7 @@ class PageSnapHelper : SnapHelper() {
         return indexOfChildClosestToCenter(layoutManager)
             .run(layoutManager::getChildAt)
             ?.run(layoutManager::getPosition)
-            ?.run(layoutManager::getPageLeftMostPosition)
+            ?.run(layoutManager::getPageLeftmostPosition)
             ?.run(layoutManager::findViewByPosition)
     }
 
@@ -60,7 +60,7 @@ class PageSnapHelper : SnapHelper() {
 
         return layoutManager.getChildAt(childIndex)
             ?.run(layoutManager::getPosition)
-            ?.run(layoutManager::getPageLeftMostPosition)
+            ?.run(layoutManager::getPageLeftmostPosition)
             ?: 0
     }
 
