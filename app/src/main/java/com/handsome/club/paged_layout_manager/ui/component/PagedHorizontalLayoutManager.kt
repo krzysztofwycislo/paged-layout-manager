@@ -201,14 +201,23 @@ class PagedHorizontalLayoutManager(
         state: RecyclerView.State,
         position: Int
     ) {
+        val linearSmoothScroller = LinearSmoothScroller(recyclerView.context)
+        linearSmoothScroller.targetPosition = position
+        startSmoothScroll(linearSmoothScroller)
+    }
+
+    fun smoothScrollToPage(
+        recyclerView: RecyclerView,
+        mState: RecyclerView.State,
+        page: Int
+    ) {
+        val position = pagedItems.indexOfFirst { it.page == page }
         val targetPosition = computeScrollVectorForPosition(position)?.run {
             if (x > 0) getPageRightmostPosition(position)
             else getPageLeftmostPosition(position)
         } ?: return
 
-        val linearSmoothScroller = LinearSmoothScroller(recyclerView.context)
-        linearSmoothScroller.targetPosition = targetPosition
-        startSmoothScroll(linearSmoothScroller)
+        smoothScrollToPosition(recyclerView, mState, targetPosition)
     }
 
     override fun generateDefaultLayoutParams(): RecyclerView.LayoutParams =

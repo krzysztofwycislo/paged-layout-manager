@@ -3,6 +3,7 @@ package com.handsome.club.paged_layout_manager.ui
 import android.app.Activity
 import android.os.Bundle
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.smoothScrollToPage
 import com.handsome.club.paged_layout_manager.databinding.ActivityMainBinding
 import com.handsome.club.paged_layout_manager.ui.adapter.ExampleAdapter
 import com.handsome.club.paged_layout_manager.ui.component.PageSnapHelper
@@ -19,8 +20,10 @@ class MainActivity : Activity() {
         binding = ActivityMainBinding.inflate(layoutInflater).apply {
             recyclerView.initialize()
 
-            nextPageBtn.setOnClickListener { recyclerView.smoothScrollToPosition(35) }
-            previousPageBtn.setOnClickListener { recyclerView.smoothScrollToPosition(0) }
+            goToPageBtn.setOnClickListener {
+                val page = pageInput.text.toString().toInt()
+                recyclerView.smoothScrollToPage(page)
+            }
         }
 
         setContentView(binding.root)
